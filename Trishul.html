@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>TRISHUL Price App</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 2.2em;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: translateY(-3px); }
+    h2 {
+      margin-bottom: 12px;
+      color: #444;
+    }
+    input[type=text], input[type=number], input[type=file] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      margin-top: 6px;
+      transition: background 0.2s;
+    }
+    button:hover { background: #45a049; }
+    .del {
+      background: #e74c3c !important;
+    }
+    .del:hover { background: #c0392b !important; }
+    img {
+      max-width: 80px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+    .item div {
+      flex: 1;
+      margin-left: 10px;
+    }
+    .item b { font-size: 1.1em; color: #333; }
+    #results, #list {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📒 TRISHUL Price App</h1>
+
+    <div class="card">
+      <h2>➕ Add Item (Admin)</h2>
+      <input type="text" id="name" placeholder="Item name" />
+      <input type="number" id="price" placeholder="Price" />
+      <input type="file" id="photo" accept="image/*" />
+      <button onclick="addItem()">💾 Save Item</button>
+    </div>
+
+    <div class="card">
+      <h2>🔍 Search Item (Staff)</h2>
+      <input type="text" id="search" placeholder="Search by name" onkeyup="searchItem()" />
+      <div id="results"></div>
+    </div>
+
+    <div class="card">
+      <h2>📋 All Items</h2>
+      <div id="list"></div>
+    </div>
+  </div>
+
+<script>
+let items = JSON.parse(localStorage.getItem('items') || '[]');
+
+function addItem(){
+  let name = document.getElementById('name').value.trim();
+  let price = document.getElementById('price').value.trim();
+  let file = document.getElementById('photo').files[0];
+
+  if(!name || !price){ alert('Name and price required'); return; }
+
+  if(file){
+    let reader = new FileReader();
+    reader.onload = function(e){
+      saveItem(name, price, e.target.result);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    saveItem(name, price, null);
+  }
+}
+
+function saveItem(name, price, img){
+  items.push({ id: Date.now(), name, price, img });
+  localStorage.setItem('items', JSON.stringify(items));
+  document.getElementById('name').value = '';
+  document.getElementById('price').value = '';
+  document.getElementById('photo').value = '';
+  renderList();
+  alert('Item saved!');
+}
+
+function deleteItem(id){
+  items = items.filter(it => it.id !== id);
+  localStorage.setItem('items', JSON.stringify(items));
+  renderList();
+}
+
+function searchItem(){
+  let q = document.getElementById('search').value.toLowerCase();
+  let filtered = items.filter(it => it.name.toLowerCase().includes(q));
+  renderResults(filtered);
+}
+
+function renderList(){
+  let list = document.getElementById('list');
+  list.innerHTML = '';
+  items.forEach(it => {
+    list.innerHTML += `<div class='item'>${it.img ? `<img src="${it.img}"/>` : ''}<div><b>${it.name}</b><br/>₹ ${it.price}</div><button class='del' onclick='deleteItem(${it.id})'>🗑 Delete</button></div>`;
+  });
+}
+
+function renderResults(arr){
+  let res = document.getElementById('results');
+  res.innerHTML = '';
+  arr.forEach(it => {
+    res.innerHTML += `<div class='item'>${it.img ? `<img src="${it.img}"/>` : ''}<div><b>${it.name}</b><br/>₹ ${it.price}</div></div>`;
+  });
+}
+
+// initial render
+renderList();
+</script>
+
+</body>
+</html>
